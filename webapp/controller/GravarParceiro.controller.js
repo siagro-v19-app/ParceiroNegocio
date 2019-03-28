@@ -62,15 +62,6 @@ sap.ui.define([
 			var oHelp = new MunicipiosHelpDialog(this.getView(), "municipio");
 			oHelp.getDialog().open();
 		},
-		
-		handleSuggest: function(oEvent) {
-			var sTerm = oEvent.getParameter("suggestValue");
-			var aFilters = [];
-			if (sTerm) {
-				aFilters.push(new Filter("Nome", sap.ui.model.FilterOperator.StartsWith, sTerm));
-			}
-			oEvent.getSource().getBinding("suggestionItems").filter(aFilters);
-		},
 
 		_routerMatch: function(){
 			var oParam = this.getModel("parametros").getData();
