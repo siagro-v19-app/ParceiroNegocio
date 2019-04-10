@@ -3,13 +3,14 @@ sap.ui.define([
 	"sap/ui/core/routing/History",
 	"sap/m/MessageBox",
 	"sap/ui/model/json/JSONModel",
-	"idxtec/lib/fragment/ContaContabilHelpDialog",
-	"idxtec/lib/fragment/ItemContabilHelpDialog",
-	"idxtec/lib/fragment/PaisBacenHelpDialog",
-	"idxtec/lib/fragment/MunicipiosHelpDialog",
-	"br/com/idxtec/ParceiroNegocio/service/Parceiro"
+	"br/com/idxtec/ParceiroNegocio/helpers/ContaContabilHelpDialog",
+	"br/com/idxtec/ParceiroNegocio/helpers/ItemContabilHelpDialog",
+	"br/com/idxtec/ParceiroNegocio/helpers/PaisBacenHelpDialog",
+	"br/com/idxtec/ParceiroNegocio/helpers/UfHelpDialog",
+	"br/com/idxtec/ParceiroNegocio/helpers/MunicipiosHelpDialog",
+	"br/com/idxtec/ParceiroNegocio/services/Session"
 ], function(Controller, History, MessageBox, JSONModel, ContaContabilHelpDialog,
-	ItemContabilHelpDialog, PaisBacenHelpDialog, MunicipiosHelpDialog, Parceiro) {
+	ItemContabilHelpDialog, PaisBacenHelpDialog, UfHelpDialog, MunicipiosHelpDialog, Session) {
 	"use strict";
 
 	return Controller.extend("br.com.idxtec.ParceiroNegocio.controller.GravarParceiro", {
@@ -26,9 +27,9 @@ sap.ui.define([
 			var oJSONModel = new JSONModel();
 			this.getOwnerComponent().setModel(oJSONModel,"model");
 		},
-
-		getModel: function(sModel) {
-				return this.getOwnerComponent().getModel(sModel);
+		
+		contaContabilReceived: function() {
+			this.getView().byId("contacontabil").setSelectedKey(this.getModel("model").getProperty("/ContaContabil"));
 		},
 		
 		itemContabilReceived: function() {
@@ -39,28 +40,37 @@ sap.ui.define([
 			this.getView().byId("pais").setSelectedKey(this.getModel("model").getProperty("/Pais"));
 		},
 		
+		ufReceived: function() {
+			this.getView().byId("uf").setSelectedKey(this.getModel("model").getProperty("/Uf"));
+		},
+		
 		municipiosReceived: function() {
 			this.getView().byId("municipio").setSelectedKey(this.getModel("model").getProperty("/Municipio"));
 		},
 		
 		handleSearchConta: function(oEvent){
-			var oHelp = new ContaContabilHelpDialog(this.getView(), "contacontabil");
-			oHelp.getDialog().open();
+			var sInputId = oEvent.getParameter("id");
+			ContaContabilHelpDialog.handleValueHelp(this.getView(), sInputId, this);
 		},
 		
 		handleSearchItem: function(oEvent){
-			var oHelp = new ItemContabilHelpDialog(this.getView(), "itemcontabil");
-			oHelp.getDialog().open();
+			var sInputId = oEvent.getParameter("id");
+			ItemContabilHelpDialog.handleValueHelp(this.getView(), sInputId, this);
 		},
 		
 		handleSearchPais: function(oEvent){
-			var oHelp = new PaisBacenHelpDialog(this.getView(), "pais");
-			oHelp.getDialog().open();
+			var sInputId = oEvent.getParameter("id");
+			PaisBacenHelpDialog.handleValueHelp(this.getView(), sInputId, this);
+		},
+		
+		handleSearchUf: function(oEvent){
+			var sInputId = oEvent.getParameter("id");
+			UfHelpDialog.handleValueHelp(this.getView(), sInputId, this);
 		},
 		
 		handleSearchMunicipio: function(oEvent){
-			var oHelp = new MunicipiosHelpDialog(this.getView(), "municipio");
-			oHelp.getDialog().open();
+			var sInputId = oEvent.getParameter("id");
+			MunicipiosHelpDialog.handleValueHelp(this.getView(), sInputId, this);
 		},
 
 		_routerMatch: function(){
@@ -76,9 +86,8 @@ sap.ui.define([
 			oView.byId("pais").setValue(null);
 			oView.byId("itemcontabil").setValue(null);
 			oView.byId("contacontabil").setValue(null);
+			oView.byId("uf").setValue(null);
 			oView.byId("municipio").setValue(null);
-
-			oView.byId("uf").setSelectedKey("");
 
 			if (this._operacao === "incluir"){
 			
@@ -86,7 +95,37 @@ sap.ui.define([
 					titulo: "Inserir Parceiro de Negócio"
 				});
 				
-				oJSONModel.setData( new Parceiro() );
+				var oNovoParceiro = {
+					"Id": 0,
+					"Codigo": "",
+					"RazaoSocial": "",
+					"Cnpj": "",
+					"Cpf": "",
+					"Rg": "",
+					"NomeFantasia": "",
+					"InsEstadual": "",
+					"Filial": "",
+					"ContaContabil": "",
+					"ItemContabil": 0,
+					"Contato": "",
+					"Email": "",
+					"Pais": 0,
+					"Uf": 0,
+					"Municipio": 0,
+					"Cep": "",
+					"Bairro": "",
+					"Logradouro": "",
+					"Numero": "",
+					"Complemento": "",
+					"Telefone": "",
+					"Observacoes": "",
+					"Empresa" : Session.get("EMPRESA_ID"),
+					"Usuario": Session.get("USUARIO_ID"),
+					"EmpresaDetails": { __metadata: { uri: "/Empresas(" + Session.get("EMPRESA_ID") + ")"}},
+					"UsuarioDetails": { __metadata: { uri: "/Usuarios(" + Session.get("USUARIO_ID") + ")"}}
+				};
+				
+				oJSONModel.setData(oNovoParceiro);
 				
 			} else if (this._operacao === "editar"){
 			
@@ -97,9 +136,6 @@ sap.ui.define([
 				oModel.read(oParam.sPath,{
 					success: function(oData) {
 						oJSONModel.setData(oData);
-					},
-					error: function(oError) {
-						MessageBox.error(oError.responseText);
 					}
 				});
 			}
@@ -134,10 +170,10 @@ sap.ui.define([
 			var oJSONModel = this.getOwnerComponent().getModel("model");
 			var oDados = oJSONModel.getData();
 			
-			oDados.ItemContabil = oDados.ItemContabil ? parseInt(oDados.ItemContabil, 0) : 0;
-			oDados.Pais = oDados.Pais ? parseInt(oDados.Pais, 0) : 0;
-			oDados.Uf = oDados.Uf ? parseInt(oDados.Uf, 0) : 0;
-			oDados.Municipio = oDados.Municipio ? parseInt(oDados.Municipio, 0) : 0;
+			oDados.ItemContabil = oDados.ItemContabil ? oDados.ItemContabil : 0;
+			oDados.Pais = oDados.Pais ? oDados.Pais : 0;
+			oDados.Uf = oDados.Uf ? oDados.Uf : 0;
+			oDados.Municipio = oDados.Municipio ? oDados.Municipio : 0;
 
 			oDados.PlanoContaDetails = {
 				__metadata: {
@@ -183,9 +219,6 @@ sap.ui.define([
 							that._goBack(); 
 						}
 					});
-				},
-				error: function(oError) {
-					MessageBox.error(oError.responseText);
 				}
 			});
 		},
@@ -201,15 +234,13 @@ sap.ui.define([
 							that._goBack();
 						}
 					});
-				},
-				error: function(oError) {
-					MessageBox.error(oError.responseText);
 				}
 			});
 		},
 		
 		_checarCampos: function(oView){
-			if(oView.byId("razaosocial").getValue() === "" || oView.byId("cnpj").getValue() === ""){
+			if(oView.byId("codigo").getValue() === "" || oView.byId("razaosocial").getValue() === ""
+			|| oView.byId("filial").getValue() === ""){
 				return true;
 			} else{
 				return false; 
@@ -218,7 +249,10 @@ sap.ui.define([
 		
 		onVoltar: function(){
 			this._goBack();
+		},
+		
+		getModel: function(sModel) {
+			return this.getOwnerComponent().getModel(sModel);
 		}
 	});
-
 });

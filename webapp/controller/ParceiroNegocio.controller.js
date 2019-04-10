@@ -7,25 +7,16 @@ sap.ui.define([
 
 	return Controller.extend("br.com.idxtec.ParceiroNegocio.controller.ParceiroNegocio", {
 		onInit: function(){
-			var that = this;
-			var oModel = this.getOwnerComponent().getModel();
 			var oParamModel = new JSONModel();
 			
 			this.getOwnerComponent().setModel(oParamModel, "parametros"); 
 			this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
-			
-			oModel.attachRequestSent(function() {
-				that.getView().setBusy(true);
-			});
-			
-			oModel.attachRequestCompleted(function() {
-				that.getView().setBusy(false);	
-			});
 		},
 		
 		onRefresh: function(e){
 			var oModel = this.getOwnerComponent().getModel();
 			oModel.refresh(true);
+			this.getView().byId("tableParceiro").clearSelection();
 		},
 		
 		onIncluir: function(){
@@ -45,7 +36,7 @@ sap.ui.define([
 			var nIndex = oTable.getSelectedIndex();
 			
 			if (nIndex === -1){
-				MessageBox.information("Selecione um parceiro da tabela.");
+				MessageBox.warning("Selecione um parceiro da tabela.");
 				return;
 			}
 			
@@ -63,7 +54,7 @@ sap.ui.define([
 			var nIndex = oTable.getSelectedIndex();
 			
 			if (nIndex === -1){
-				MessageBox.information("Selecione um parceiro da tabela.");
+				MessageBox.warning("Selecione um parceiro da tabela.");
 				return;
 			}
 			
@@ -85,9 +76,6 @@ sap.ui.define([
 				success: function(){
 					oModel.refresh(true);
 					oTable.clearSelection();
-				},
-				error: function(oError){
-					MessageBox.error(oError.responseText);
 				}
 			});
 		}
