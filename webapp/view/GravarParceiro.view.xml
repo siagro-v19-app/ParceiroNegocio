@@ -9,7 +9,7 @@
 			<Page showHeader="false">
 				<content>
 					<VBox class="sapUiSmallMargin">
-						<Panel headerText="Parceiro de Negócio">
+						<Panel headerText="{view>/titulo}">
 							<f:SimpleForm id="formParceiro"
 								editable="true"
 								layout="ResponsiveGridLayout"
@@ -27,7 +27,7 @@
 								columnsM="2"
 								singleContainerFullSize="false">
 								<f:content>
-									<core:Title text="{view>/titulo}"/>
+									<core:Title/>
 									<Label text="Código" labelFor="codigo"/>
 									<Input id="codigo" value="{model>/Codigo}" required="true"/>
 									
@@ -175,8 +175,8 @@
 				<footer>
 					<Toolbar>
 						<ToolbarSpacer/>
-						<Button icon="sap-icon://save" id="salvar" text="Salvar" press="onSalvar"/>
-						<Button icon="sap-icon://reset" id="voltar" text="Cancelar" press="onVoltar"/>
+						<Button text="Salvar" press="onSalvar" type="Accept"/>
+   						<Button text="Fechar" press="onVoltar" type="Reject"/>
 					</Toolbar>
 				</footer>
 			</Page>

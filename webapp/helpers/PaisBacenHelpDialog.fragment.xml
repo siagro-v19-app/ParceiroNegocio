@@ -4,7 +4,7 @@
 	<SelectDialog
 		title="País BACEN"
 		class="sapUiPopupWithPadding sapUiSizeCompact"
-		items="{/PaisBacens}"
+		items="{path: '/PaisBacens', sorter: {path: 'Nome'}}"
 		search="_handleValueHelpSearch"
 		confirm="_handleValueHelpClose"
 		cancel="_handleValueHelpClose">
